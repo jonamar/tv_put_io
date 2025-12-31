@@ -111,5 +111,6 @@ dependencies {
     implementation 'com.prof18.rssparser:rssparser:4.0.2'
 
     // Required for Java 8 Stream APIs on Android API < 26
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+    // Using 1.2.5 for compatibility with AGP 7.0.4 (2.0+ requires AGP 7.4+)
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.5'
 }
