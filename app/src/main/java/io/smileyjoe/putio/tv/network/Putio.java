@@ -9,7 +9,7 @@ import com.koushikdutta.ion.builder.LoadBuilder;
 
 import java.util.concurrent.ExecutionException;
 
-import javax.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import io.smileyjoe.putio.tv.Application;
 import io.smileyjoe.putio.tv.BuildConfig;

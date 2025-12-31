@@ -44,7 +44,7 @@ import com.google.android.exoplayer2.ext.leanback.LeanbackPlayerAdapter;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.trackselection.TrackSelectionOverrides;
 import com.google.android.exoplayer2.ui.SubtitleView;
-import com.google.android.exoplayer2.util.EventLogger;
+// import com.google.android.exoplayer2.util.EventLogger; // Unused - disabled for privacy
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
 import com.google.common.collect.ImmutableList;
