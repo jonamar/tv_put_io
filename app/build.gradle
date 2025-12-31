@@ -1,15 +1,8 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
-apply plugin: 'com.google.firebase.appdistribution'
 apply plugin: 'com.github.triplet.play'
 apply from: '../release_notes.groovy'
 
 import com.github.triplet.gradle.androidpublisher.ReleaseStatus
-
-def getFirebaseDistributionKeyPath = { ->
-    project.hasProperty('firebase_distribution') ? firebase_distribution : file("firebase-distribution.json").path
-}
 
 def getPlayCredentials = { ->
     project.hasProperty('play_store_credentials') ? play_store_credentials : file("play-store-credentials.json").path
@@ -33,10 +26,6 @@ def getKeystoreKeyAlias = { ->
 
 def getBuildNumber = { ->
     project.hasProperty('build_number') ? build_number : 0
-}
-
-def getEnableCrashlyticsDebug = { ->
-    project.hasProperty('enable_crashlytics_debug') ? enable_crashlytics_debug : false
 }
 
 def getOutputDirectory = { ->
@@ -78,28 +67,13 @@ android {
         debug{
             applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
-            ext.enableCrashlytics = getEnableCrashlyticsDebug()
             resValue 'string', 'host_name', 'debug.' + project.ext.get('host')
-
-            firebaseAppDistribution {
-                artifactType="APK"
-                releaseNotes = generateReleaseNotes("debug")
-                groups="qa"
-                serviceCredentialsFile = getFirebaseDistributionKeyPath()
-            }
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
             resValue 'string', 'host_name', project.ext.get('host')
-
-            firebaseAppDistribution {
-                artifactType="AAB"
-                releaseNotes = generateReleaseNotes("release")
-                groups="testers"
-                serviceCredentialsFile = getFirebaseDistributionKeyPath()
-            }
         }
     }
 
@@ -133,10 +107,6 @@ dependencies {
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.tvprovider:tvprovider:1.0.0'
     annotationProcessor "androidx.room:room-compiler:2.4.2"
-
-    implementation platform('com.google.firebase:firebase-bom:29.1.0')
-    implementation 'com.google.firebase:firebase-crashlytics'
-    implementation 'com.google.firebase:firebase-analytics'
 
     implementation 'com.prof18.rssparser:rssparser:4.0.2'
 }
