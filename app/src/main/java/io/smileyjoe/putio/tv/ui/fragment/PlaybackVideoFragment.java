@@ -198,7 +198,8 @@ public class PlaybackVideoFragment extends VideoSupportFragment implements Video
                         .setMaxAudioChannelCount(6)
                         .build());
 
-        mPlayer.addAnalyticsListener(new EventLogger(null));
+        // EventLogger disabled for privacy - logs all playback events to Logcat
+        // Uncomment for debugging: mPlayer.addAnalyticsListener(new EventLogger(null));
         mPlayer.addListener(new PlayerListener());
         mListener.ifPresent(listener -> mPlayer.addListener(listener.getSubtitleView()));
 

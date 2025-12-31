@@ -2,8 +2,6 @@ package io.smileyjoe.putio.tv;
 
 import android.content.Context;
 
-import com.facebook.stetho.Stetho;
-
 import java.util.Arrays;
 
 import io.smileyjoe.putio.tv.channel.ChannelType;
@@ -17,7 +15,6 @@ public class Application extends android.app.Application {
 
     public void onCreate() {
         super.onCreate();
-        Stetho.initializeWithDefaults(this);
         sApplicationContext = getApplicationContext();
         setPutToken(SharedPrefs.getInstance(getApplicationContext()).getPutToken());
 
