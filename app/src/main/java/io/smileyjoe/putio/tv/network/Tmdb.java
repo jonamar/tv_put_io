@@ -3,6 +3,7 @@ package io.smileyjoe.putio.tv.network;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.koushikdutta.ion.Ion;
 
@@ -76,8 +77,11 @@ public class Tmdb {
             @Override
             public void onSuccess(JsonObject result) {
                 Async.run(() -> {
-                    ArrayList<io.smileyjoe.putio.tv.object.Genre> genres = io.smileyjoe.putio.tv.object.Genre.fromApi(result.get("genres").getAsJsonArray());
-                    AppDatabase.getInstance(mContext).genreDao().insert(genres);
+                    JsonElement genresElement = result.get("genres");
+                    if (genresElement != null && genresElement.isJsonArray()) {
+                        ArrayList<io.smileyjoe.putio.tv.object.Genre> genres = io.smileyjoe.putio.tv.object.Genre.fromApi(genresElement.getAsJsonArray());
+                        AppDatabase.getInstance(mContext).genreDao().insert(genres);
+                    }
                 });
             }
         }
