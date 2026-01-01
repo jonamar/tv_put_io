@@ -163,11 +163,21 @@
 
     <style name="ListItem.Video">
         <item name="android:padding">@dimen/padding_general</item>
-        <item name="android:backgroundTint">@color/color_transparent</item>
+        <item name="android:background">@color/color_background</item>
+        <item name="android:backgroundTint">@color/selector_bg_inverse</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
     </style>
 
     <style name="ListItem.Elevated">
         <item name="android:backgroundTint">@color/selector_bg_inverse_elevated</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <style name="RecyclerViewList">
+        <item name="android:focusable">true</item>
+        <item name="android:descendantFocusability">afterDescendants</item>
     </style>
 
     <style name="Button" parent="Widget.MaterialComponents.Button">

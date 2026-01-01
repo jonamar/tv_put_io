@@ -49,6 +49,7 @@ public class PlaybackActivity extends BaseActivity<ActivityPlaybackBinding> impl
     public static final String EXTRA_YOUTUBE_URL = "youtube_url";
     public static final String EXTRA_MEDIA_TYPE = "media_type";
     public static final String EXTRA_FORCE_MP4 = "force_mp4";
+    public static final boolean DEFAULT_FORCE_MP4 = true; // Default to MP4 for reliable codec support on Android 7.1
 
     private PlaybackVideoFragment mPlaybackVideoFragment;
     private ConvertFragment mConvertFragment;
@@ -60,7 +61,7 @@ public class PlaybackActivity extends BaseActivity<ActivityPlaybackBinding> impl
     private Video mVideo;
     private String mYoutubeUrl;
     private MediaType mMediaType;
-    private boolean mPlayMp4 = false;
+    private boolean mPlayMp4 = DEFAULT_FORCE_MP4;
     @IdRes
     private final int[] mRightPanelIds = new int[]{R.id.fragment_subtitle, R.id.fragment_track_group_selection};
 

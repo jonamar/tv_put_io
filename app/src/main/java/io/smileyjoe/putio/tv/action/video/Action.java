@@ -14,6 +14,8 @@ import io.smileyjoe.putio.tv.object.Video;
 import io.smileyjoe.putio.tv.object.VideoType;
 import io.smileyjoe.putio.tv.ui.activity.PlaybackActivity;
 
+import static io.smileyjoe.putio.tv.ui.activity.PlaybackActivity.DEFAULT_FORCE_MP4;
+
 public interface Action {
 
     Context getContext();
@@ -42,7 +44,7 @@ public interface Action {
     }
 
     default void play(Video video, boolean shouldResume) {
-        play(video, null, false, shouldResume);
+        play(video, null, DEFAULT_FORCE_MP4, shouldResume);
     }
 
     default void play(Video video, boolean playMp4, boolean shouldResume) {

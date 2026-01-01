@@ -27,6 +27,8 @@ import io.smileyjoe.putio.tv.ui.fragment.VideosFragment;
 import io.smileyjoe.putio.tv.util.FragmentUtil;
 import io.smileyjoe.putio.tv.video.VideoLoader;
 
+import static io.smileyjoe.putio.tv.ui.activity.PlaybackActivity.DEFAULT_FORCE_MP4;
+
 public class SeriesActivity extends BaseActivity<ActivitySeriesBinding> implements LoadVideoReceiver {
 
     private static final String EXTRA_SERIES = "series";
@@ -128,7 +130,7 @@ public class SeriesActivity extends BaseActivity<ActivitySeriesBinding> implemen
     private class VideoListListener implements VideosFragment.Listener {
         @Override
         public void onItemClicked(View view, Video item) {
-            startActivity(PlaybackActivity.getIntent(getBaseContext(), mFragmentVideoList.getVideos(), item, false, true));
+            startActivity(PlaybackActivity.getIntent(getBaseContext(), mFragmentVideoList.getVideos(), item, DEFAULT_FORCE_MP4, true));
         }
 
         @Override

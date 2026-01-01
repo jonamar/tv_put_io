@@ -25,6 +25,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -66,6 +67,8 @@ import io.smileyjoe.putio.tv.ui.activity.PlaybackActivity;
 import io.smileyjoe.putio.tv.util.VideoPlayerGlue;
 import io.smileyjoe.putio.tv.util.YoutubeUtil;
 
+import static io.smileyjoe.putio.tv.ui.activity.PlaybackActivity.DEFAULT_FORCE_MP4;
+
 /**
  * https://github.com/googlearchive/androidtv-Leanback/blob/master/app/src/main/java/com/example/android/tvleanback/ui/PlaybackFragment.java
  * <p>
@@ -99,7 +102,7 @@ public class PlaybackVideoFragment extends VideoSupportFragment implements Video
     private YoutubeUtil mYoutube;
     private String mYoutubeUrl;
     private boolean mShowNextPrevious;
-    private boolean mPlayMp4 = false;
+    private boolean mPlayMp4 = DEFAULT_FORCE_MP4;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -280,7 +283,15 @@ public class PlaybackVideoFragment extends VideoSupportFragment implements Video
                 }
             }
 
-            prepareMediaForPlaying(video.getStreamUri(mPlayMp4), subtitleUri);
+            // Debug logging for stream URL selection
+            Log.d("PlaybackVideo", "=== Stream URL Debug ===");
+            Log.d("PlaybackVideo", "Play MP4 mode: " + mPlayMp4);
+            Log.d("PlaybackVideo", "Native stream URI: " + (video.getStreamUri() != null ? video.getStreamUri().toString() : "null"));
+            Log.d("PlaybackVideo", "MP4 stream URI: " + (video.getStreamMp4Uri() != null ? video.getStreamMp4Uri().toString() : "null"));
+            Uri selectedUri = video.getStreamUri(mPlayMp4);
+            Log.d("PlaybackVideo", "Selected URI: " + (selectedUri != null ? selectedUri.toString() : "null"));
+
+            prepareMediaForPlaying(selectedUri, subtitleUri);
 
             mPlayerGlue.addPlayerCallback(new PlayerCallback());
 
@@ -432,6 +443,24 @@ public class PlaybackVideoFragment extends VideoSupportFragment implements Video
         public void onRenderedFirstFrame() {
             mPlayerGlue.showAudioTrackSelection();
             populateEndTime();
+
+            // Debug logging for track selection
+            Log.d("PlaybackVideo", "=== Track Info ===");
+            TracksInfo tracksInfo = mPlayer.getCurrentTracksInfo();
+            for (TracksInfo.TrackGroupInfo groupInfo : tracksInfo.getTrackGroupInfos()) {
+                TrackGroup group = groupInfo.getTrackGroup();
+                if (group != null && group.length > 0) {
+                    String trackType = groupInfo.getTrackType() == 1 ? "AUDIO" : groupInfo.getTrackType() == 2 ? "VIDEO" : "OTHER";
+                    Log.d("PlaybackVideo", trackType + " track - supported: " + groupInfo.isSupported() + ", selected: " + groupInfo.isSelected());
+                    if (group.length > 0) {
+                        Log.d("PlaybackVideo", "  Format: " + group.getFormat(0).sampleMimeType + ", codec: " + group.getFormat(0).codecs);
+                        if (groupInfo.getTrackType() == 1) { // Audio
+                            Log.d("PlaybackVideo", "  Channels: " + group.getFormat(0).channelCount);
+                        }
+                    }
+                }
+            }
+
             // we only want to do this after the first load //
             mShouldResume = false;
         }
