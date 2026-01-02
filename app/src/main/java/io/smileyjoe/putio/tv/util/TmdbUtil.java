@@ -24,6 +24,42 @@ public class TmdbUtil {
     private TmdbUtil() {
     }
 
+    public static class OnTmdbMovieSearchResponse extends Response {
+
+        private Context mContext;
+        private Video mVideo;
+
+        public OnTmdbMovieSearchResponse(Context context, Video video) {
+            mContext = context;
+            mVideo = video;
+        }
+
+        @Override
+        public void onSuccess(JsonObject result) {
+            JsonObject jsonObject = null;
+            if (result.has("results")) {
+                JsonArray jsonArray = result.get("results").getAsJsonArray();
+
+                android.util.Log.d("TmdbSearch", "Movie search for '" + mVideo.getTitle() + "' returned " + jsonArray.size() + " results");
+                if (jsonArray.size() > 0) {
+                    jsonObject = jsonArray.get(0).getAsJsonObject();
+                    android.util.Log.d("TmdbSearch", "Using first result: " + new JsonUtil(jsonObject).getString("title"));
+                }
+            } else {
+                jsonObject = result.getAsJsonObject();
+            }
+
+            if (jsonObject != null) {
+                JsonUtil json = new JsonUtil(jsonObject);
+
+                TmdbUtil.OnTmdbResponse response = new TmdbUtil.OnTmdbResponse(mContext, mVideo);
+                Tmdb.Movie.get(mContext, json.getLong("id"), response);
+            } else {
+                android.util.Log.d("TmdbSearch", "No TMDB results for movie: " + mVideo.getTitle());
+            }
+        }
+    }
+
     public static class OnTmdbSeriesSearchResponse extends Response {
 
         private Context mContext;
@@ -40,8 +76,10 @@ public class TmdbUtil {
             if (result.has("results")) {
                 JsonArray jsonArray = result.get("results").getAsJsonArray();
 
+                android.util.Log.d("TmdbSearch", "Series search for '" + mVideo.getTitle() + "' returned " + jsonArray.size() + " results");
                 if (jsonArray.size() > 0) {
                     jsonObject = jsonArray.get(0).getAsJsonObject();
+                    android.util.Log.d("TmdbSearch", "Using first result: " + new JsonUtil(jsonObject).getString("name"));
                 }
             } else {
                 jsonObject = result.getAsJsonObject();
@@ -52,6 +90,8 @@ public class TmdbUtil {
 
                 TmdbUtil.OnTmdbResponse response = new TmdbUtil.OnTmdbResponse(mContext, mVideo);
                 Tmdb.Series.get(mContext, json.getLong("id"), response);
+            } else {
+                android.util.Log.d("TmdbSearch", "No TMDB results for series: " + mVideo.getTitle());
             }
         }
     }
@@ -123,7 +163,7 @@ public class TmdbUtil {
                         character.setCastMemberTmdbId(json.getLong("id"));
                         character.setName(json.getString("character"));
                         character.setOrder(json.getInt("order"));
-                        character.setProfileImage(Tmdb.Image.getUrl(json.getString("profile_path")));
+                        character.setProfileImage(Tmdb.Image.getUrl(json.getString("profile_path"), Tmdb.Image.Type.PROFILE));
                         character.setVideoTmdbId(video.getTmdbId());
 
                         characters.add(character);
@@ -144,8 +184,15 @@ public class TmdbUtil {
             video.setTmdbId(json.getLong("id"));
             video.setOverView(json.getString("overview"));
 
-            video.setBackdrop(Tmdb.Image.getUrl(json.getString("backdrop_path")));
-            video.setPoster(Tmdb.Image.getUrl(json.getString("poster_path")));
+            String backdropPath = json.getString("backdrop_path");
+            String posterPath = json.getString("poster_path");
+
+            android.util.Log.d("TmdbUpdate", "Updating video '" + video.getTitle() + "' with TMDB data");
+            android.util.Log.d("TmdbUpdate", "  backdrop_path: " + (backdropPath != null ? backdropPath : "null"));
+            android.util.Log.d("TmdbUpdate", "  poster_path: " + (posterPath != null ? posterPath : "null"));
+
+            video.setBackdrop(Tmdb.Image.getUrl(backdropPath, Tmdb.Image.Type.BACKDROP));
+            video.setPoster(Tmdb.Image.getUrl(posterPath, Tmdb.Image.Type.POSTER));
 
             String title = json.getStringNotEmpty("title", "name");
             if (!TextUtils.isEmpty(title)) {
@@ -225,7 +272,7 @@ public class TmdbUtil {
 
                         String poster = json.getString("poster_path");
                         if (!TextUtils.isEmpty(poster)) {
-                            video.setPoster(Tmdb.Image.getUrl(poster));
+                            video.setPoster(Tmdb.Image.getUrl(poster, Tmdb.Image.Type.POSTER));
                         }
 
                         String airDate = json.getString("air_date");

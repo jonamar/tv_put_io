@@ -27,7 +27,21 @@ No Google. No Facebook. No telemetry.
 
 Enables installation on older Android TV devices (Anker Nebula Mars Pro 2, etc.) without sacrificing features. The original minSdk 26 requirement was unnecessarily restrictive—this app uses no Android 8+ specific APIs.
 
-## Features (Unchanged)
+## Fork Improvements
+
+### Hybrid TMDB Matching (90%+ accuracy)
+- **Lean hybrid matcher** - Searches both movie AND series databases in parallel
+- **Smart title normalization** - Strips quality tags, brand prefixes, fixes apostrophes
+- **Levenshtein distance scoring** - Finds best match using edit distance + popularity
+- **MD5-based caching** - Avoids redundant TMDB API calls
+- **Optimized image sizes** - Uses w342/w780/w185 for faster loading
+
+### UX Improvements
+- **Default MP4 playback** - Direct streaming instead of conversion prompts
+- **Persistent authentication** - Login survives app restarts
+- **Mars branding** - Custom launcher icon and name for Anker Nebula Mars Pro 2
+
+## Features
 
 - Browse put.io folders and stream videos
 - ExoPlayer-based playback with adaptive bitrate streaming

@@ -15,9 +15,10 @@ import java.util.concurrent.Executors;
 import io.smileyjoe.putio.tv.object.Character;
 import io.smileyjoe.putio.tv.object.Genre;
 import io.smileyjoe.putio.tv.object.Group;
+import io.smileyjoe.putio.tv.object.TmdbCache;
 import io.smileyjoe.putio.tv.object.Video;
 
-@Database(entities = {Video.class, Genre.class, Group.class, Character.class}, version = 9)
+@Database(entities = {Video.class, Genre.class, Group.class, Character.class, TmdbCache.class}, version = 10)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract VideoDao videoDao();
 
@@ -26,6 +27,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract GroupDao groupDao();
 
     public abstract CharacterDao characterDao();
+
+    public abstract TmdbCacheDao tmdbCacheDao();
 
     private static volatile AppDatabase INSTANCE;
     private static final int NUMBER_OF_THREADS = 4;
@@ -118,6 +121,22 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_9_10 = new Migration(9, 10) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `tmdb_cache` ("
+                    + "`id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+                    + "`filename_hash` TEXT, "
+                    + "`tmdb_id` INTEGER NOT NULL, "
+                    + "`content_type` TEXT, "
+                    + "`matched_title` TEXT, "
+                    + "`match_score` REAL NOT NULL, "
+                    + "`timestamp` INTEGER NOT NULL)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_tmdb_cache_filename_hash` "
+                    + "ON `tmdb_cache` (`filename_hash`)");
+        }
+    };
+
     public static AppDatabase getInstance(final Context context) {
         if (INSTANCE == null) {
             synchronized (AppDatabase.class) {
@@ -132,6 +151,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             .addMigrations(MIGRATION_6_7)
                             .addMigrations(MIGRATION_7_8)
                             .addMigrations(MIGRATION_8_9)
+                            .addMigrations(MIGRATION_9_10)
                             .addCallback(new RoomCallback())
                             .build();
                 }

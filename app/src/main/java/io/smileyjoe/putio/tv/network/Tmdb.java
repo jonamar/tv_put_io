@@ -18,7 +18,9 @@ import io.smileyjoe.putio.tv.util.TmdbUtil;
 public class Tmdb {
 
     private static String BASE = "https://api.themoviedb.org/3";
-    private static String BASE_IMAGE = "https://image.tmdb.org/t/p/original";
+    private static String BASE_IMAGE_POSTER = "https://image.tmdb.org/t/p/w342";
+    private static String BASE_IMAGE_BACKDROP = "https://image.tmdb.org/t/p/w780";
+    private static String BASE_IMAGE_PROFILE = "https://image.tmdb.org/t/p/w185";
     private static String SEARCH = "/search";
     private static String MOVIE = "/movie";
     private static String TV = "/tv";
@@ -49,9 +51,30 @@ public class Tmdb {
     }
 
     public static class Image extends Base {
+        public enum Type {
+            POSTER, BACKDROP, PROFILE
+        }
+
         public static String getUrl(String url) {
+            return getUrl(url, Type.POSTER);
+        }
+
+        public static String getUrl(String url, Type type) {
             if (!TextUtils.isEmpty(url)) {
-                return BASE_IMAGE + url;
+                String baseUrl;
+                switch (type) {
+                    case BACKDROP:
+                        baseUrl = BASE_IMAGE_BACKDROP;
+                        break;
+                    case PROFILE:
+                        baseUrl = BASE_IMAGE_PROFILE;
+                        break;
+                    case POSTER:
+                    default:
+                        baseUrl = BASE_IMAGE_POSTER;
+                        break;
+                }
+                return baseUrl + url;
             } else {
                 return null;
             }
@@ -92,6 +115,21 @@ public class Tmdb {
 
             String url = getUrl(SEARCH, TV);
             url = addParam(url, PARAM_SEARCH, title);
+
+            Ion.with(context)
+                    .load(url)
+                    .asJsonObject()
+                    .withResponse()
+                    .setCallback(response);
+        }
+
+        public static void search(Context context, String title, int year, Response response) {
+
+            String url = getUrl(SEARCH, TV);
+            url = addParam(url, PARAM_SEARCH, title);
+            if (year > 0) {
+                url = addParam(url, "first_air_date_year", Integer.toString(year));
+            }
 
             Ion.with(context)
                     .load(url)

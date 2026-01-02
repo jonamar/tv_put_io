@@ -98,9 +98,32 @@ public class PutioHelper {
         switch (video.getVideoType()) {
             case MOVIE:
                 if (!video.isTmdbChecked()) {
-                    TmdbUtil.OnTmdbResponse response = new TmdbUtil.OnTmdbResponse(mContext, video);
-                    Tmdb.Movie.search(mContext, video.getTitle(), video.getYear(), response);
+                    // Use hybrid matcher for better accuracy
+                    TmdbMatcher.findBestMatch(mContext, video.getPutTitle(), video.getTitle(), video.getYear(),
+                            new TmdbMatcher.OnMatchListener() {
+                                @Override
+                                public void onMatch(TmdbMatcher.MatchResult result) {
+                                    // Get full details from TMDB
+                                    TmdbUtil.OnTmdbResponse response = new TmdbUtil.OnTmdbResponse(mContext, video);
+                                    if (result.contentType.equals("movie")) {
+                                        Tmdb.Movie.get(mContext, result.tmdbId, response);
+                                    } else {
+                                        Tmdb.Series.get(mContext, result.tmdbId, response);
+                                    }
+                                }
+
+                                @Override
+                                public void onNoMatch() {
+                                    video.isTmdbChecked(true);
+                                    video.isTmdbFound(false);
+                                    Async.run(() -> {
+                                        AppDatabase.getInstance(mContext).videoDao().insert(video);
+                                    });
+                                }
+                            });
                 }
+                mVideos.add(video);
+                break;
             case EPISODE:
                 if (!video.isTmdbChecked() && parentTmdbId > 0) {
                     video.setParentTmdbId(parentTmdbId);
@@ -111,14 +134,60 @@ public class PutioHelper {
                 break;
             case SEASON:
                 if (!video.isTmdbChecked()) {
-                    TmdbUtil.OnTmdbSeriesSearchResponse response = new TmdbUtil.OnTmdbSeriesSearchResponse(mContext, video);
-                    Tmdb.Series.search(mContext, video.getTitle(), response);
+                    // Use hybrid matcher for series as well
+                    TmdbMatcher.findBestMatch(mContext, video.getPutTitle(), video.getTitle(), video.getYear(),
+                            new TmdbMatcher.OnMatchListener() {
+                                @Override
+                                public void onMatch(TmdbMatcher.MatchResult result) {
+                                    // For seasons, we need series data
+                                    TmdbUtil.OnTmdbResponse response = new TmdbUtil.OnTmdbResponse(mContext, video);
+                                    if (result.contentType.equals("tv")) {
+                                        Tmdb.Series.get(mContext, result.tmdbId, response);
+                                    } else {
+                                        // Matched as movie but it's actually a season - treat as no match
+                                        onNoMatch();
+                                    }
+                                }
+
+                                @Override
+                                public void onNoMatch() {
+                                    video.isTmdbChecked(true);
+                                    video.isTmdbFound(false);
+                                    Async.run(() -> {
+                                        AppDatabase.getInstance(mContext).videoDao().insert(video);
+                                    });
+                                }
+                            });
                 }
                 mVideos.add(video);
                 break;
             case UNKNOWN:
                 switch (video.getFileType()) {
                     case VIDEO:
+                        // Use hybrid matcher for unknown videos (could be movie or series)
+                        if (!video.isTmdbChecked()) {
+                            TmdbMatcher.findBestMatch(mContext, video.getPutTitle(), video.getTitle(), video.getYear(),
+                                    new TmdbMatcher.OnMatchListener() {
+                                        @Override
+                                        public void onMatch(TmdbMatcher.MatchResult result) {
+                                            TmdbUtil.OnTmdbResponse response = new TmdbUtil.OnTmdbResponse(mContext, video);
+                                            if (result.contentType.equals("movie")) {
+                                                Tmdb.Movie.get(mContext, result.tmdbId, response);
+                                            } else {
+                                                Tmdb.Series.get(mContext, result.tmdbId, response);
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onNoMatch() {
+                                            video.isTmdbChecked(true);
+                                            video.isTmdbFound(false);
+                                            Async.run(() -> {
+                                                AppDatabase.getInstance(mContext).videoDao().insert(video);
+                                            });
+                                        }
+                                    });
+                        }
                         mVideos.add(video);
                         break;
                     case FOLDER:
